@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the Prisma docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  ANFITRION
+  INVITADO
+}
+
+enum EstadoAsistencia {
+  PENDIENTE
+  CONFIRMADO
+  RECHAZADO
+}
+
+model Persona {
+  id           Int          @id @default(autoincrement())
+  nombre       String
+  email        String       @unique
+  contrasena   String?
+  telefono     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  eventos      Evento[]
+  invitaciones Invitacion[]
+}
+
+model Evento {
+  id          Int          @id @default(autoincrement())
+  titulo      String
+  descripcion String?
+  lugar       String
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  creadorId   Int
+  creador     Persona      @relation(fields: [creadorId], references: [id], onDelete: Cascade)
+  invitaciones Invitacion[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Invitacion {
+  id          Int          @id @default(autoincrement())
+  rol         Rol          @default(INVITADO)
+  estado      EstadoAsistencia @default(PENDIENTE)
+  mensaje     String?
+  eventoId    Int
+  personaId   Int
+  evento      Evento       @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+  persona     Persona      @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([eventoId, personaId])
+}
