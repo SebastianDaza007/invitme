@@ -22,11 +22,8 @@ import {
 import { AuthModal, type Vista } from "@/src/components/auth/auth-modal";
 import { Button, buttonClasses } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import {
-  guardarSesion,
-  useSesion,
-  type Sesion,
-} from "@/src/lib/sesion";
+import { supabaseBrowser } from "@/src/lib/supabase/client";
+import { publicarEvento } from "@/src/server/eventos";
 import {
   cn,
   formatFechaEvento,
@@ -92,18 +89,6 @@ function guardarBorrador(borrador: BorradorEvento | null) {
   window.dispatchEvent(new Event(BORRADOR_EVENT));
 }
 
-function slugify(texto: string) {
-  return (
-    texto
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") || "mi-evento"
-  );
-}
-
 export function CreateEvento() {
   const crudo = useSyncExternalStore(
     subscribeBorrador,
@@ -119,12 +104,12 @@ export function CreateEvento() {
     }
   }, [crudo]);
 
-  const sesion = useSesion();
   const [errores, setErrores] = useState<Errores>({});
+  const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [estado, setEstado] = useState<EstadoForm>("idle");
   const [modalOpen, setModalOpen] = useState(false);
   const [vistaModal, setVistaModal] = useState<Vista>("registro");
-  const [linkPublicado, setLinkPublicado] = useState<string | null>(null);
+  const [publicado, setPublicado] = useState<{ slug: string; url: string } | null>(null);
   const [copiado, setCopiado] = useState(false);
   const resumenRef = useRef<HTMLDivElement>(null);
 
@@ -153,11 +138,26 @@ export function CreateEvento() {
   }
 
   async function finalizarPublicacion() {
-    // Fase 1: publicación simulada — aquí irá el create del Evento en Prisma.
-    setLinkPublicado(`invitme.app/e/${slugify(borrador.titulo)}`);
     setEstado("publicando");
-    await new Promise((r) => setTimeout(r, 900));
+    setErrorGeneral(null);
+    const res = await publicarEvento({
+      titulo: borrador.titulo,
+      anfitrion: borrador.anfitrion,
+      fechaHora: borrador.fechaHora,
+      lugar: borrador.lugar,
+      descripcion: borrador.descripcion,
+    });
+    if (!res.ok) {
+      setEstado("idle");
+      setErrorGeneral(res.error);
+      requestAnimationFrame(() => resumenRef.current?.focus());
+      return;
+    }
     guardarBorrador(null);
+    setPublicado({
+      slug: res.data.slug,
+      url: `${window.location.origin}/e/${res.data.slug}`,
+    });
     setEstado("publicado");
   }
 
@@ -169,7 +169,9 @@ export function CreateEvento() {
       return;
     }
     // Flujo honesto: sin sesión se pide cuenta recién acá, con el borrador ya a salvo.
-    if (!sesion) {
+    // getSession lee la cookie directamente: no depende del timing de useSesion.
+    const { data } = await supabaseBrowser().auth.getSession();
+    if (!data.session) {
       setVistaModal("registro");
       setModalOpen(true);
       return;
@@ -183,23 +185,22 @@ export function CreateEvento() {
     void publicar();
   }
 
-  function onAuthOk(nueva: Sesion) {
-    guardarSesion(nueva);
+  function onAuthOk() {
     setModalOpen(false);
     void finalizarPublicacion();
   }
 
   function reiniciar() {
     setEstado("idle");
-    setLinkPublicado(null);
+    setPublicado(null);
     setCopiado(false);
     setErrores({});
   }
 
   async function copiarLink() {
-    if (!linkPublicado) return;
+    if (!publicado) return;
     try {
-      await navigator.clipboard.writeText(`https://${linkPublicado}`);
+      await navigator.clipboard.writeText(publicado.url);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
@@ -207,7 +208,7 @@ export function CreateEvento() {
     }
   }
 
-  if (estado === "publicado" && linkPublicado) {
+  if (estado === "publicado" && publicado) {
     return (
       <section
         aria-live="polite"
@@ -226,7 +227,7 @@ export function CreateEvento() {
 
         <div className="mt-7 flex w-full max-w-md items-center gap-2 rounded-2xl border border-border bg-white/70 py-2 pl-4 pr-2">
           <span className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground/90">
-            {linkPublicado}
+            {publicado.url.replace(/^https?:\/\//, "")}
           </span>
           <button
             type="button"
@@ -252,7 +253,7 @@ export function CreateEvento() {
 
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
           <Link
-            href="/"
+            href={`/e/${publicado.slug}`}
             className={buttonClasses({ variant: "primary", size: "lg" })}
           >
             Ver invitación
@@ -287,6 +288,14 @@ export function CreateEvento() {
             noValidate
             className="mt-7 flex flex-col gap-4"
           >
+            {errorGeneral && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm font-medium text-destructive"
+              >
+                {errorGeneral}
+              </div>
+            )}
             {hayErrores && (
               <div
                 ref={resumenRef}

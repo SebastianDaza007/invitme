@@ -23,9 +23,10 @@ enum EstadoAsistencia {
 
 model Persona {
   id           Int          @id @default(autoincrement())
+  // UUID del usuario en auth.users de Supabase. Null para invitados sin cuenta.
+  authId       String?      @unique
   nombre       String
   email        String       @unique
-  contrasena   String?
   telefono     String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -35,6 +36,7 @@ model Persona {
 
 model Evento {
   id          Int          @id @default(autoincrement())
+  slug        String       @unique
   titulo      String
   descripcion String?
   lugar       String

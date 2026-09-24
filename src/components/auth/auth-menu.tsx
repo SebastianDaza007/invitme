@@ -7,11 +7,8 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
-import {
-  guardarSesion,
-  useSesion,
-  type Sesion,
-} from "@/src/lib/sesion";
+import { useSesion } from "@/src/lib/sesion";
+import { supabaseBrowser } from "@/src/lib/supabase/client";
 import { cn } from "@/src/lib/utils";
 import { AuthModal } from "@/src/components/auth/auth-modal";
 
@@ -54,8 +51,9 @@ export function AuthMenu() {
     };
   }, [menuOpen]);
 
-  function cerrarSesion() {
-    guardarSesion(null);
+  async function cerrarSesion() {
+    // onAuthStateChange actualiza useSesion solo — no hace falta estado local.
+    await supabaseBrowser().auth.signOut();
     setMenuOpen(false);
   }
 
@@ -69,8 +67,7 @@ export function AuthMenu() {
     else setModalOpen(true);
   }
 
-  function onAuthOk(nueva: Sesion) {
-    guardarSesion(nueva);
+  function onAuthOk() {
     setModalOpen(false);
     triggerRef.current?.focus();
   }

@@ -13,6 +13,9 @@ import {
   X,
 } from "lucide-react";
 import type { Sesion } from "@/src/lib/sesion";
+import { sesionDeUsuario } from "@/src/lib/sesion";
+import { supabaseBrowser } from "@/src/lib/supabase/client";
+import { sincronizarPersona } from "@/src/server/auth";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -24,6 +27,19 @@ type Errores = Partial<Record<Campo, string>>;
 type EstadoForm = "idle" | "enviando";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function traducirError(mensaje: string) {
+  const m = mensaje.toLowerCase();
+  if (m.includes("invalid login")) return "Email o contraseña incorrectos.";
+  if (m.includes("already registered") || m.includes("already been registered")) {
+    return "Ya existe una cuenta con ese email.";
+  }
+  if (m.includes("password")) return "La contraseña es demasiado débil.";
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Demasiados intentos. Esperá un momento y probá de nuevo.";
+  }
+  return "Algo salió mal. Intentá de nuevo.";
+}
 
 function validarNombre(valor: string) {
   return valor.trim().length >= 2 ? undefined : "Escribe tu nombre";
@@ -58,6 +74,8 @@ export function AuthModal({
   const [contrasena, setContrasena] = useState("");
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [errores, setErrores] = useState<Errores>({});
+  const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [estado, setEstado] = useState<EstadoForm>("idle");
   const dialogRef = useRef<HTMLDivElement>(null);
   const resumenRef = useRef<HTMLDivElement>(null);
@@ -91,6 +109,7 @@ export function AuthModal({
   function cambiarVista(nueva: Vista) {
     setVista(nueva);
     setErrores({});
+    setErrorGeneral(null);
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -109,14 +128,48 @@ export function AuthModal({
       return;
     }
 
-    // Fase 1: auth simulado — aquí irá el POST a la API / Server Action real.
     setEstado("enviando");
-    await new Promise((r) => setTimeout(r, 900));
-    onAuthOk({
-      nombre:
-        vista === "registro" ? nombre.trim() : email.trim().split("@")[0],
+    setErrorGeneral(null);
+    setAviso(null);
+    const supabase = supabaseBrowser();
+
+    if (vista === "registro") {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: contrasena,
+        options: { data: { nombre: nombre.trim() } },
+      });
+      if (error) {
+        setErrorGeneral(traducirError(error.message));
+        setEstado("idle");
+        return;
+      }
+      if (!data.session) {
+        // Supabase tiene confirmación por email activada: el usuario existe
+        // pero aún no tiene sesión. El borrador queda guardado en localStorage.
+        setAviso(
+          "Te enviamos un email de confirmación. Confirmá tu cuenta y después iniciá sesión.",
+        );
+        setVista("login");
+        setEstado("idle");
+        return;
+      }
+      await sincronizarPersona(nombre.trim());
+      onAuthOk({ nombre: nombre.trim(), email: email.trim() });
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
+      password: contrasena,
     });
+    if (error) {
+      setErrorGeneral(traducirError(error.message));
+      setEstado("idle");
+      return;
+    }
+    await sincronizarPersona();
+    onAuthOk(sesionDeUsuario(data.user));
   }
 
   const hayErrores =
@@ -188,6 +241,22 @@ export function AuthModal({
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="mt-5 flex flex-col gap-4">
+          {aviso && (
+            <div
+              role="status"
+              className="rounded-2xl border border-primary/25 bg-primary/8 px-4 py-3 text-sm font-medium text-foreground"
+            >
+              {aviso}
+            </div>
+          )}
+          {errorGeneral && (
+            <div
+              role="alert"
+              className="rounded-2xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm font-medium text-destructive"
+            >
+              {errorGeneral}
+            </div>
+          )}
           {hayErrores && (
             <div
               ref={resumenRef}

@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import type { RespuestaRsvp } from "@/src/types/invite";
+import { confirmarAsistencia } from "@/src/server/rsvp";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -31,12 +32,13 @@ function validarEmail(valor: string) {
   return EMAIL_RE.test(valor.trim()) ? undefined : "Ingresa un email válido";
 }
 
-export function RsvpForm() {
+export function RsvpForm({ slug }: { slug?: string }) {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [respuesta, setRespuesta] = useState<RespuestaRsvp | null>(null);
   const [errores, setErrores] = useState<Errores>({});
   const [errorRespuesta, setErrorRespuesta] = useState(false);
+  const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [estado, setEstado] = useState<EstadoForm>("idle");
   const resumenRef = useRef<HTMLDivElement>(null);
 
@@ -64,9 +66,25 @@ export function RsvpForm() {
       return;
     }
 
-    // Fase 1: envío simulado — aquí irá el POST a la API / Server Action.
     setEstado("enviando");
-    await new Promise((r) => setTimeout(r, 900));
+    setErrorGeneral(null);
+
+    if (slug) {
+      const res = await confirmarAsistencia({
+        slug,
+        nombre,
+        email,
+        respuesta,
+      });
+      if (!res.ok) {
+        setErrorGeneral(res.error ?? "No pudimos enviar tu respuesta. Intentá de nuevo.");
+        setEstado("idle");
+        return;
+      }
+    } else {
+      // Demo de la landing: sin evento real, el envío se simula.
+      await new Promise((r) => setTimeout(r, 900));
+    }
     setEstado("enviado");
   }
 
@@ -76,6 +94,7 @@ export function RsvpForm() {
     setRespuesta(null);
     setErrores({});
     setErrorRespuesta(false);
+    setErrorGeneral(null);
     setEstado("idle");
   }
 
@@ -142,6 +161,14 @@ export function RsvpForm() {
           noValidate
           className="flex flex-col gap-4 lg:pt-2"
         >
+          {errorGeneral && (
+            <div
+              role="alert"
+              className="rounded-2xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm font-medium text-destructive"
+            >
+              {errorGeneral}
+            </div>
+          )}
           {hayErrores && (
             <div
               ref={resumenRef}
