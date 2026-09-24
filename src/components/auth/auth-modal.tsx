@@ -10,13 +10,13 @@ import {
   Eye,
   EyeOff,
   LoaderCircle,
-  Sparkles,
   X,
 } from "lucide-react";
 import type { Sesion } from "@/src/lib/sesion";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { Logo } from "@/src/components/common/logo";
 
 export type Vista = "login" | "registro";
 type Campo = "nombre" | "email" | "contrasena";
@@ -146,10 +146,7 @@ export function AuthModal({
           <X className="size-4" aria-hidden />
         </button>
 
-        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-          <Sparkles className="size-3.5" aria-hidden />
-          Invitme
-        </p>
+        <Logo height={22} />
         <h2
           id="auth-titulo"
           className="mt-2 font-display text-3xl font-semibold italic leading-tight text-foreground"

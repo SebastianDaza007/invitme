@@ -564,7 +564,7 @@ function PreviewInvitacion({ borrador }: { borrador: BorradorEvento }) {
           </li>
           <li className="flex items-center gap-2.5">
             <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
-            <span className="line-clamp-1">{lugar}</span>
+            <span className="min-w-0 truncate">{lugar}</span>
           </li>
         </ul>
 
