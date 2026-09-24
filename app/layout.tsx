@@ -14,6 +14,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://invitme.app"),
   title: "Invitme — Estás invitado",
   description:
     "Invitaciones digitales con estilo: confirma tu asistencia en segundos.",

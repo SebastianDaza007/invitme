@@ -14,11 +14,11 @@
   --color-warm-mid: #f29524;
   --color-warm-end: #fad036;
 
-  --color-background: #f9fafb;
+  --color-background: #faf6f0;
   --color-foreground: #1c1917;
   --color-card: #ffffff;
   --color-card-foreground: #1c1917;
-  --color-muted: #f5f5f4;
+  --color-muted: #f4efe8;
   --color-muted-foreground: #57534e;
   --color-border: #e7e5e4;
   --color-destructive: #dc2626;
@@ -44,9 +44,9 @@ body {
 /* Fondo: mesh gradient delicado estilo Apple Invites, en la paleta cálida */
 .bg-mesh {
   background:
-    radial-gradient(55% 45% at 85% 0%, rgb(250 208 54 / 0.3), transparent 62%),
-    radial-gradient(45% 38% at 8% 18%, rgb(227 108 20 / 0.12), transparent 60%),
-    radial-gradient(65% 55% at 50% 105%, rgb(242 149 36 / 0.2), transparent 68%),
+    radial-gradient(55% 45% at 85% 0%, rgb(250 208 54 / 0.34), transparent 62%),
+    radial-gradient(45% 38% at 8% 18%, rgb(227 108 20 / 0.15), transparent 60%),
+    radial-gradient(65% 55% at 50% 105%, rgb(242 149 36 / 0.24), transparent 68%),
     var(--color-background);
 }
 

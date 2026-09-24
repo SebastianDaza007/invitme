@@ -1,4 +1,4 @@
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { mockEvento } from "@/src/lib/mock-event";
 import { Reveal } from "@/src/components/invite/reveal";
 import { InviteHero } from "@/src/components/invite/invite-hero";
@@ -7,20 +7,17 @@ import { EventDetails } from "@/src/components/invite/event-details";
 import { RsvpForm } from "@/src/components/invite/rsvp-form";
 import { AuthMenu } from "@/src/components/auth/auth-menu";
 import { buttonClasses } from "@/src/components/ui/button";
+import { Logo } from "@/src/components/common/logo";
 
 export default function Home() {
   return (
     <main className="bg-mesh relative flex-1">
       <header className="sticky top-0 z-50 border-b border-white/60 bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
-          >
-            <Sparkles className="size-4 text-primary" aria-hidden />
-            Invitme
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <a href="#" className="inline-flex items-center">
+            <Logo height={28} />
           </a>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <a
               href="/crear"
               className="hidden rounded text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:inline-flex"
@@ -31,10 +28,11 @@ export default function Home() {
               href="#rsvp"
               className={buttonClasses({
                 variant: "primary",
-                className: "h-9 px-4 text-sm",
+                className: "h-9 px-3.5 text-sm sm:px-4",
               })}
             >
-              Confirmar asistencia
+              <span className="sm:hidden">Confirmar</span>
+              <span className="hidden sm:inline">Confirmar asistencia</span>
             </a>
             <AuthMenu />
           </div>
@@ -56,11 +54,8 @@ export default function Home() {
 
       <Reveal>
         <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
-          <div className="rounded-[2rem] border border-primary/10 bg-white/50 px-6 py-12 text-center sm:py-16">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-              <Sparkles className="size-3.5" aria-hidden />
-              Invitme
-            </p>
+          <div className="rounded-4xl border border-primary/10 bg-white/50 px-6 py-12 text-center sm:py-16">
+            <Logo height={22} className="mx-auto" />
             <h2 className="text-gradient-warm mx-auto mt-3 max-w-xl font-display text-3xl font-semibold italic leading-tight sm:text-4xl">
               ¿Tú también tienes un evento?
             </h2>
@@ -88,6 +83,16 @@ export default function Home() {
           <p>
             Hecho con{" "}
             <span className="font-semibold text-foreground/80">Invitme</span>
+            <span aria-hidden className="mx-1.5 text-muted-foreground/60">·</span>
+            by{" "}
+            <a
+              href="https://www.linkedin.com/in/gaston-sebastian-daza-707413252"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground/70 underline-offset-2 transition-colors hover:text-primary hover:underline"
+            >
+              Gastón Sebastián Daza
+            </a>
           </p>
           <p>Invitaciones digitales con estilo</p>
         </div>

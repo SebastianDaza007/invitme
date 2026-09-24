@@ -120,7 +120,7 @@ export function RsvpForm() {
       aria-labelledby="rsvp-titulo"
       className="scroll-mt-20 border-t border-primary/10 bg-white/45"
     >
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             RSVP
