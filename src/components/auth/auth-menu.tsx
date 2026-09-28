@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  CalendarDays,
   LogOut,
   Sparkles,
   UserRound,
@@ -113,14 +115,24 @@ export function AuthMenu() {
               </p>
             </div>
             <div className="mx-2 my-1 h-px bg-border/80" aria-hidden />
-            <a
+            <Link
               href="/crear"
               role="menuitem"
+              onClick={() => setMenuOpen(false)}
               className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/8 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               <Sparkles className="size-4 text-primary" aria-hidden />
               Crear mi evento
-            </a>
+            </Link>
+            <Link
+              href="/mis-eventos"
+              role="menuitem"
+              onClick={() => setMenuOpen(false)}
+              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/85 transition-colors hover:bg-primary/8 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              <CalendarDays className="size-4 text-primary" aria-hidden />
+              Mis eventos
+            </Link>
             <button
               type="button"
               role="menuitem"

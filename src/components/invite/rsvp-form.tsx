@@ -119,7 +119,7 @@ export function RsvpForm({ slug }: { slug?: string }) {
           </h2>
           <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted-foreground">
             {confirmado
-              ? `${nombre.trim()}, tu asistencia quedó confirmada. Recibirás los detalles en ${email.trim()}.`
+              ? `${nombre.trim()}, tu asistencia quedó confirmada. Guardá el link de la invitación: si cambia el lugar o el horario, ahí vas a ver los datos actualizados.`
               : `${nombre.trim()}, registramos que no podrás asistir. ¡Gracias por avisar!`}
           </p>
           <Button variant="ghost" className="mt-6" onClick={reiniciar}>
@@ -142,7 +142,7 @@ export function RsvpForm({ slug }: { slug?: string }) {
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            RSVP
+            Confirmación
           </p>
           <h2
             id="rsvp-titulo"
@@ -310,7 +310,7 @@ export function RsvpForm({ slug }: { slug?: string }) {
                 Enviando…
               </>
             ) : (
-              "Confirmar RSVP"
+              "Confirmar asistencia"
             )}
           </Button>
         </form>

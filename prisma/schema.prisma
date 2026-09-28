@@ -42,6 +42,8 @@ model Evento {
   lugar       String
   fechaInicio DateTime
   fechaFin    DateTime?
+  // Id del fondo preset de la invitación (ver src/lib/fondos.ts). Null = default.
+  fondo       String?
   creadorId   Int
   creador     Persona      @relation(fields: [creadorId], references: [id], onDelete: Cascade)
   invitaciones Invitacion[]
