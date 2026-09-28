@@ -125,6 +125,16 @@ export default async function PaginaEvento({ params }: { params: Params }) {
           <p>
             Hecho con{" "}
             <span className="font-semibold text-foreground/80">Invitme</span>
+            <span aria-hidden className="mx-1.5 text-muted-foreground/60">·</span>
+            by{" "}
+            <a
+              href="https://www.linkedin.com/in/gaston-sebastian-daza-707413252"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground/70 underline-offset-2 transition-colors hover:text-primary hover:underline"
+            >
+              Gastón Sebastián Daza
+            </a>
           </p>
           <p>Invitaciones digitales con estilo</p>
         </div>
