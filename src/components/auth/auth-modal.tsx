@@ -21,7 +21,7 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Logo } from "@/src/components/common/logo";
 
-export type Vista = "login" | "registro";
+export type Vista = "login" | "registro" | "recuperar";
 type Campo = "nombre" | "email" | "contrasena";
 type Errores = Partial<Record<Campo, string>>;
 type EstadoForm = "idle" | "enviando";
@@ -110,16 +110,15 @@ export function AuthModal({
     setVista(nueva);
     setErrores({});
     setErrorGeneral(null);
+    setAviso(null);
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (estado === "enviando") return;
 
-    const nuevos: Errores = {
-      email: validarEmail(email),
-      contrasena: validarContrasena(contrasena),
-    };
+    const nuevos: Errores = { email: validarEmail(email) };
+    if (vista !== "recuperar") nuevos.contrasena = validarContrasena(contrasena);
     if (vista === "registro") nuevos.nombre = validarNombre(nombre);
     setErrores(nuevos);
 
@@ -133,11 +132,34 @@ export function AuthModal({
     setAviso(null);
     const supabase = supabaseBrowser();
 
+    if (vista === "recuperar") {
+      // El email de Supabase apunta a /auth/callback, que intercambia el code
+      // por una sesión de recuperación y redirige a /recuperar.
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: `${window.location.origin}/auth/callback?next=/recuperar`,
+        },
+      );
+      if (error) {
+        setErrorGeneral(traducirError(error.message));
+      } else {
+        setAviso(
+          `Te enviamos un link a ${email.trim()} para crear una nueva contraseña. Revisá también el spam.`,
+        );
+      }
+      setEstado("idle");
+      return;
+    }
+
     if (vista === "registro") {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: contrasena,
-        options: { data: { nombre: nombre.trim() } },
+        options: {
+          data: { nombre: nombre.trim() },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (error) {
         setErrorGeneral(traducirError(error.message));
@@ -204,12 +226,21 @@ export function AuthModal({
           id="auth-titulo"
           className="mt-2 font-display text-3xl font-semibold italic leading-tight text-foreground"
         >
-          {vista === "login" ? "Hola de nuevo" : "Crea tu cuenta"}
+          {vista === "login"
+            ? "Hola de nuevo"
+            : vista === "registro"
+              ? "Crea tu cuenta"
+              : "Recuperá tu contraseña"}
         </h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          {vista === "login" ? textoLogin : textoRegistro}
+          {vista === "login"
+            ? textoLogin
+            : vista === "registro"
+              ? textoRegistro
+              : "Ingresá tu email y te enviamos un link para crear una nueva."}
         </p>
 
+        {vista !== "recuperar" && (
         <div
           role="tablist"
           aria-label="Tipo de acceso"
@@ -239,6 +270,7 @@ export function AuthModal({
             </button>
           ))}
         </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate className="mt-5 flex flex-col gap-4">
           {aviso && (
@@ -331,13 +363,25 @@ export function AuthModal({
             )}
           </div>
 
+          {vista !== "recuperar" && (
           <div>
-            <label
-              htmlFor="auth-contrasena"
-              className="mb-1.5 block text-sm font-medium text-foreground"
-            >
-              Contraseña
-            </label>
+            <div className="mb-1.5 flex items-baseline justify-between gap-2">
+              <label
+                htmlFor="auth-contrasena"
+                className="block text-sm font-medium text-foreground"
+              >
+                Contraseña
+              </label>
+              {vista === "login" && (
+                <button
+                  type="button"
+                  onClick={() => cambiarVista("recuperar")}
+                  className="cursor-pointer text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Input
                 id="auth-contrasena"
@@ -382,6 +426,7 @@ export function AuthModal({
               </p>
             )}
           </div>
+          )}
 
           <Button
             type="submit"
@@ -393,19 +438,38 @@ export function AuthModal({
             {estado === "enviando" ? (
               <>
                 <LoaderCircle className="size-4 animate-spin" aria-hidden />
-                {vista === "login" ? "Entrando…" : "Creando cuenta…"}
+                {vista === "login"
+                  ? "Entrando…"
+                  : vista === "registro"
+                    ? "Creando cuenta…"
+                    : "Enviando…"}
               </>
             ) : vista === "login" ? (
               "Entrar"
-            ) : (
+            ) : vista === "registro" ? (
               "Crear cuenta"
+            ) : (
+              "Enviar link"
             )}
           </Button>
 
-          <p className="text-center text-xs leading-relaxed text-muted-foreground">
-            Solo los anfitriones necesitan cuenta — tus invitados confirman sin
-            registrarse.
-          </p>
+          {vista === "recuperar" ? (
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              ¿La recordaste?{" "}
+              <button
+                type="button"
+                onClick={() => cambiarVista("login")}
+                className="cursor-pointer font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              >
+                Volver a iniciar sesión
+              </button>
+            </p>
+          ) : (
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              Solo los anfitriones necesitan cuenta — tus invitados confirman
+              sin registrarse.
+            </p>
+          )}
         </form>
       </div>
     </div>

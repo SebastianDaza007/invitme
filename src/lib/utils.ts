@@ -28,7 +28,7 @@ export function formatHoraEvento(fecha: Date) {
 }
 
 export function urlMapa(lugar: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lugar)}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lugar)}`;
 }
 
 export function slugify(texto: string) {

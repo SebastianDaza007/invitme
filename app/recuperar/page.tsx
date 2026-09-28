@@ -1,16 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { supabaseServer } from "@/src/lib/supabase/server";
 import { AuthMenu } from "@/src/components/auth/auth-menu";
 import { NavMenu } from "@/src/components/common/nav-menu";
+import { RecuperarForm } from "@/src/components/auth/recuperar-form";
 import { Logo } from "@/src/components/common/logo";
-import { CreateEvento } from "@/src/components/create/create-evento";
 
 export const metadata: Metadata = {
-  title: "Invitme — Crea el tuyo",
-  description: "Arma tu invitación digital en minutos y comparte el link.",
+  title: "Invitme — Nueva contraseña",
 };
 
-export default function CrearPage() {
+type SearchParams = Promise<{ error?: string }>;
+
+// Acá aterriza el link de recuperación (/auth/callback?next=/recuperar ya
+// intercambió el code por sesión). Sin sesión el link era inválido o expiró.
+export default async function RecuperarPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const { error } = await searchParams;
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <main className="bg-mesh relative flex flex-1 flex-col">
       <header className="sticky top-0 z-50 border-b border-white/60 bg-background/70 backdrop-blur-xl">
@@ -25,7 +39,7 @@ export default function CrearPage() {
         </div>
       </header>
 
-      <CreateEvento />
+      <RecuperarForm activo={!!user && error !== "enlace"} />
     </main>
   );
 }

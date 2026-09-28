@@ -14,6 +14,8 @@ export interface EventoInvitacion {
   fechaFin?: Date;
   /** Nombre visible del creador del evento (Persona.nombre). */
   anfitrion: string;
+  /** Id del fondo preset (src/lib/fondos.ts). Undefined/null = default. */
+  fondo?: string | null;
 }
 
 /** Respuesta que el invitado elige en el RSVP (PENDIENTE no es una respuesta válida). */

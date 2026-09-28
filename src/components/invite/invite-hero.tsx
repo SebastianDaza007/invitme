@@ -1,5 +1,6 @@
 import { CalendarDays, Clock, MapPin, Navigation, Sparkles } from "lucide-react";
 import type { EventoInvitacion } from "@/src/types/invite";
+import { urlFondo } from "@/src/lib/fondos";
 import { formatFechaEvento, formatHoraEvento, urlMapa } from "@/src/lib/utils";
 import { buttonClasses } from "@/src/components/ui/button";
 
@@ -16,7 +17,10 @@ export function InviteHero({ evento }: InviteHeroProps) {
   return (
     <section className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-4 pb-14 pt-8 sm:px-6 sm:pt-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-20 lg:pt-16">
       {/* Panel visual tipo póster: primero en mobile, a la derecha en desktop */}
-      <div className="relative order-first h-44 overflow-hidden rounded-[2rem] bg-gradient-to-br from-warm-start via-warm-mid to-warm-end sm:h-56 lg:order-none lg:h-auto lg:min-h-[540px] lg:self-stretch">
+      <div
+        className="relative order-first h-44 overflow-hidden rounded-[2rem] bg-gradient-to-br from-warm-start via-warm-mid to-warm-end bg-cover bg-center sm:h-56 lg:order-none lg:h-auto lg:min-h-[540px] lg:self-stretch"
+        style={{ backgroundImage: `url(${urlFondo(evento.fondo)})` }}
+      >
         <div
           aria-hidden
           className="animate-float-slow absolute -left-10 top-8 size-40 rounded-full bg-white/25 blur-2xl"

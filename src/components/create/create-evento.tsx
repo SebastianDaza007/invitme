@@ -20,8 +20,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AuthModal, type Vista } from "@/src/components/auth/auth-modal";
+import { SelectorFondo } from "@/src/components/common/selector-fondo";
 import { Button, buttonClasses } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { FONDO_DEFAULT, urlFondo } from "@/src/lib/fondos";
 import { supabaseBrowser } from "@/src/lib/supabase/client";
 import { publicarEvento } from "@/src/server/eventos";
 import {
@@ -36,6 +38,7 @@ interface BorradorEvento {
   fechaHora: string;
   lugar: string;
   descripcion: string;
+  fondo: string;
 }
 
 type Campo = "titulo" | "anfitrion" | "fechaHora" | "lugar";
@@ -51,6 +54,7 @@ const BORRADOR_VACIO: BorradorEvento = {
   fechaHora: "",
   lugar: "",
   descripcion: "",
+  fondo: FONDO_DEFAULT,
 };
 
 // Fecha fija para el preview cuando el usuario aún no eligió una
@@ -146,6 +150,7 @@ export function CreateEvento() {
       fechaHora: borrador.fechaHora,
       lugar: borrador.lugar,
       descripcion: borrador.descripcion,
+      fondo: borrador.fondo,
     });
     if (!res.ok) {
       setEstado("idle");
@@ -447,6 +452,11 @@ export function CreateEvento() {
               />
             </div>
 
+            <SelectorFondo
+              value={borrador.fondo}
+              onChange={(f) => setCampo("fondo", f)}
+            />
+
             <div className="mt-1">
               <Button
                 type="submit"
@@ -521,7 +531,10 @@ function PreviewInvitacion({ borrador }: { borrador: BorradorEvento }) {
 
   return (
     <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/70 shadow-[0_24px_60px_-24px_rgb(120_60_10/0.35)] backdrop-blur-xl">
-      <div className="relative h-44 overflow-hidden bg-gradient-to-br from-warm-start via-warm-mid to-warm-end sm:h-52">
+      <div
+        className="relative h-44 overflow-hidden bg-gradient-to-br from-warm-start via-warm-mid to-warm-end bg-cover bg-center sm:h-52"
+        style={{ backgroundImage: `url(${urlFondo(borrador.fondo)})` }}
+      >
         <div
           aria-hidden
           className="animate-float-slow absolute -left-10 top-6 size-36 rounded-full bg-white/25 blur-2xl"
